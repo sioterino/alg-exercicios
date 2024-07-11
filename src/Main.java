@@ -145,12 +145,9 @@ public class Main {
         int n = 10;
         int[][] matriz6 = new int[n][n];
 
-        for (int i = 0; i < matriz6.length; i++) {
-            matriz6[i][i] = 1;
-        }
-
         System.out.println("\n\n5.");
         for (int i = 0; i < matriz6.length; i++) {
+            matriz6[i][i] = 1;
             for (int j = 0; j < matriz6[0].length; j++) {
                 System.out.print(matriz6[i][j] + " ");
             }
@@ -162,16 +159,11 @@ public class Main {
 
 
 //q7: transponha uma matriz
-        int[][] matriz7 = {
-                {1, 2, 3},
-                {4, 5, 6},
-                {7, 8, 9}
-        };
-        int[][] transposta = new int[matriz7[0].length][matriz7.length];
+        int[][] transposta = new int[matriz1[0].length][matriz1.length];
 
         for (int i = 0; i < transposta.length; i++) {
             for (int j = 0; j < transposta[0].length; j++) {
-                transposta[j][i] = matriz7[i][j];
+                transposta[j][i] = matriz1[i][j];
             }
         }
 
@@ -186,26 +178,13 @@ public class Main {
 
 
 //q8: multiplicação de matrizes
-        int[][] matriz9 = {
-                {1, 2},
-                {3, 4},
-        };
-        int[][] matriz10 = {
-                {5, 6},
-                {7, 8}
-        };
-
-        for (int i = 0; i < resultado.length; i++) {
-            for (int j = 0; j < resultado[0].length; j++) {
-
-//                resultado[i][j] = (matriz9[i][j] * matriz10[i][j]) + (matriz9[i + 1][j] * matriz10[i + 1][j + 1]);
-
-            }
-        }
-
         System.out.println("\n\n8.");
-        for (int i = 0; i < matriz9.length; i++) {
-            for (int j = 0; j < matriz10[0].length; j++) {
+        for (int i = 0; i < matriz1.length; i++) { // linhas
+            for (int j = 0; j < matriz1[0].length; j++) { // colunas
+                resultado[i][j] = 0; // depois de cada elemento, a soma zera;
+                for (int k = 0; k < matriz1.length; k++) { // linhas e colunas
+                    resultado[i][j] = resultado[i][j] + (matriz1[i][k] * matriz2[k][j]);
+                }
                 System.out.print(resultado[i][j] + " ");
             }
             System.out.println();
