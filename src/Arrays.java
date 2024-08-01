@@ -1,5 +1,5 @@
 package src;
-public class Main {
+public class Arrays {
     public static void main(String[] args) {
 
 // q1: soma dos elementos de uma matriz
