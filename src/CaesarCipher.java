@@ -1,33 +1,33 @@
 package src;
 
+import java.util.Arrays;
+import java.util.Locale;
 import java.util.Scanner;
 
 public class CaesarCipher {
 
 	private static final Scanner scanner = new Scanner(System.in);
+	static String lower = "abcdefghijklmnopqrstuvwxyz";
+	static String upper = lower.toUpperCase();
 
 	// main method, pede por input e gera a cifra.
-	public static void main() {
+	public static void main(String[] args) {
 
 		String texto = pedeTexto();
 		int chave = pedeDeslocamento();
 
 		String encoded = encode(texto, chave);
-		String decoded = decode(encoded);
+		String decoded = decodeConsonant(encoded);
 
-		System.out.println(encoded);
-		System.out.println(decoded);
+		System.out.println("\nenconded: " + encoded);
+		System.out.println("deconded: " + decoded);
 		
 	}
 
-	// método de codificação.
+	// metodo de codificação.
 	public static String encode(String str, int deslocamento) {
 
 		str = formating(str);
-
-		String lower = "abcdefghijklmnopqrstuvwxyz";
-		String upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
 		String cipher = ""; // output
 
 		for (int i = 0; i < str.length(); i++) { // percorre string str
@@ -40,7 +40,7 @@ public class CaesarCipher {
 
 				if (Character.isLowerCase(letra)) { // MINUSCULAS
 					// define o indice da letra coletada.
-					int indice = indexOf(letra, lower);
+					int indice = lower.indexOf(letra);
 					// desloca e mantém no escopo do alfabeto com %26.
 					int desloca = (indice + deslocamento) % 26;
 					// codifica
@@ -49,8 +49,8 @@ public class CaesarCipher {
 
 				} else { // MAIUSCULAS
 					// define o indice da letra coletada.
-					int indice = indexOf(letra, upper);
-					// Calculate the new index with wrapping
+					int indice = upper.indexOf(letra);
+					// desloca e mantém no escopo do alfabeto com %26.
 					int desloca = (indice + deslocamento) % 26;
 					// codifica
 					cipher += upper.charAt(desloca);
@@ -66,54 +66,29 @@ public class CaesarCipher {
 		return cipher;
 	}
 
-	// método auxiliar que encontra o indice de um chae em uma string.
-	private static int indexOf(char letra, String alfabeto) {
-		int i;
-		for (i = 0; i < alfabeto.length(); i++) {
-			if (letra == alfabeto.charAt(i)) {
-				break;
-			}
-		}
-
-		return i;
-	}
-
-	// método principal de decodificação >> calcula frequencia das letras e gera 3 possibilidades.
+	// metodo principal de decodificação >> calcula frequencia das letras e gera 3 possibilidades.
 	public static String decode(String str) {
-		
-		String auxiliar = formating(str.toLowerCase());
-		String lower = "abcdefghijklmnopqrstuvwxyz";
-		
-		int[] frequencia = new int[26];
-		// calcula frequencia de cada letra.
-		for (int i = 0; i < auxiliar.length(); i++) {
-			
-			char letra = auxiliar.charAt(i);
-			if (Character.isLetter(letra)) {
-				frequencia[indexOf(letra, lower)]++;
-				
-			}
-		}
 
-		int maior = 0;
+		str = formating(str);
+
+		// calcula letra mais frequente.
+		char maior = str.charAt(0);
 		int indice = 0;
-		// encontra letra com maior frequencia.
-		for (int i = 0; i < 26; i++) {
-			if (frequencia[i] > maior) {
-				maior = frequencia[i];
+		for (int i = 1; i < str.length(); i++) {
+			char letra = str.charAt(i);
+			if (maior < letra) {
+				maior = letra;
 				indice = i;
 			}
 		}
 
-
 		String[] letras = {"a", "e", "o"};
-		String[] decodificacoes = new String[letras.length];
+		String[] decifragens = new String[letras.length];
+
 		// assume que a letra com maior frequencia é 'a', 'e', ou 'o'.
 		for (int i = 0; i < letras.length; i++) {
 
-			// por album motivo só funciona se eu usar string e dps .charAt(0) ????
-			int deslocamento = indice - indexOf(letras[i].charAt(0), lower);
-
+			int deslocamento = -(indice - lower.indexOf(letras[i])) + 26;
 			// garante que o deslocamento é um inteiro positivo.
 			if (deslocamento < 0) {
 				deslocamento += 26;
@@ -121,63 +96,81 @@ public class CaesarCipher {
 			}
 
 			// gera as três possíveis decodificações.
-			decodificacoes[i] = decodeShift(str, deslocamento);
+			decifragens[i] = encode(str, deslocamento);
 		}
 
 		// retorna a melhor decodificação.
-		return bestGuess(decodificacoes);
+		return bestGuess(decifragens);
 	}
 
-	// com um int de deslocamento, decodifica a cifragem.
-	private static String decodeShift(String str, int deslocamento) {
 
-		String lower = "abcdefghijklmnopqrstuvwxyz";
-		String upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-		String decoded = ""; // output;
 
-		for (int i = 0; i < str.length(); i++) { // percorre string
+	public static String decodeConsonant(String str) {
 
-			char letra = str.charAt(i);
+		String auxiliar = formating(str).toLowerCase();
+		String[] decifragens = new String[lower.length()];
 
-			if (Character.isLetter(letra)) {
-				// char letra == alfabeto.
+		for (int i = 0; i < decifragens.length; i++) {
+			decifragens[i] = encode(str, i);
+		}
 
-				if (Character.isLowerCase(letra)) {
-					// MINÚSCULA.
-					// encontra indice da letra na string.
-					int indice = indexOf(letra, lower);
-					// calcula o deslocamento.
-					int descloca = (indice - deslocamento + 26) % 26;
-					decoded += lower.charAt(descloca);
+		// retorna a melhor decodificação.
+		return consonant(decifragens);
+	}
 
-				} else {
-					// MAIÚSCULA.
-					// encontra indice da letra na string.
-					int indice = indexOf(letra, upper);
-					// calcula o deslocamento.
-					int desloca = (indice - deslocamento + 26) % 26;
-					decoded += upper.charAt(desloca);
+	// metodo q decodifica contando vogais e consoantes.
+	private static String consonant(String[] decifragens) {
 
+		int[] repeticoes = new int[decifragens.length]; // repetições por decodificação.
+
+		String vogais = "aeiou";
+		String consoantes = "bcdfghjklmnpqrstvwxyz";
+
+		for (int i = 0; i < decifragens.length - 1; i++) {
+
+			int cont = 0;
+
+			for (int j = 0; j < decifragens[i].length() - 1; j++) {
+
+				String antecessor = String.valueOf(decifragens[i].charAt(j)); // consoante.
+				String sucessor = String.valueOf(decifragens[i].charAt(j + 1)); // vogal.
+
+				if (consoantes.contains(antecessor) && vogais.contains(sucessor)) {
+					cont++;
 				}
-			} else {
-				// char letra != alfabeto.
-				decoded += letra;
+			}
+
+			repeticoes[i] = cont;
+		}
+
+
+		// define o indice da decodificação com a MENOR frequencia de letras raras.
+		int menor = repeticoes[0];
+		int indice = 0;
+		for (int i = 1; i < repeticoes.length; i++) {
+			if (menor > repeticoes[i]) {
+				menor = repeticoes[i];
+				indice = i;
 			}
 		}
 
-		return decoded;
+		// decodificação com menor ocorrencias de letras raras.
+		System.out.println(Arrays.toString(repeticoes));
+		System.out.println(decifragens[indice]);
+		return decifragens[indice];
 	}
 
-	// método auxiliar de decodificação >> calcula frequencia de letras raras na lingua portuguesa.
-	private static String bestGuess(String[] decoded) {
+	// metodo auxiliar de decodificação >> calcula frequencia de letras raras na lingua portuguesa.
+	private static String bestGuess(String[] decifragens) {
 
-		int[] repeticoes = new int[decoded.length]; // repetições por decodificação.
+		int[] repeticoes = new int[decifragens.length]; // repetições por decodificação.
 
-		for (int i = 0; i < decoded.length; i++) {
-
-			String frase = decoded[i]; // decodificação a ser analisada.
-			int cont = 0;
+		// conta frequência de 'x', 'w', 'y' e 'k'.
+		for (int i = 0; i < decifragens.length; i++) {
+			// decodificação a ser analisada.
+			String frase = decifragens[i];
+			int cont = 0; // conta ocorrÊncias.
 
 			// conta ocorrencias de 'x', 'w', 'y' ou 'k'.
 			for (int j = 0; j < frase.length(); j++) {
@@ -193,15 +186,18 @@ public class CaesarCipher {
 			repeticoes[i] = cont;
 		}
 
+
 		// verifica se há empate de letras em repetições[].
 		if (isEqual(repeticoes).length > 1) {
-			// caso  isEqual != {0}.
+			// caso isEqual != {0}.
 
+			// armazena indices das
 			int[] indices = isEqual(repeticoes);
 
+			// conta ocorrências de 'z'.
 			for (int i = 0; i < indices.length; i++) { // percorre indices (isEqual).
 
-				String frase = decoded[indices[i]]; // decodificação a ser analisada.
+				String frase = decifragens[indices[i]]; // decodificação a ser analisada.
 				int cont = 0;
 
 				// conta as ocorrencias de 'z'.
@@ -211,9 +207,9 @@ public class CaesarCipher {
 						cont++;
 					}
 				}
+
 				// soma o contador ao int[] repetições.
 				repeticoes[indices[i]] += cont;
-
 			}
 
 		}
@@ -229,7 +225,7 @@ public class CaesarCipher {
 		}
 
 		// decodificação com menor ocorrencias de letras raras.
-		return decoded[indice];
+		return decifragens[indice];
 	}
 
 	// verifica e retorna os indices de frequencia de letras raras que estão empatados.
