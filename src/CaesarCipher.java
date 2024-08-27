@@ -1,7 +1,5 @@
 package src;
 
-import java.util.Arrays;
-import java.util.Locale;
 import java.util.Scanner;
 
 public class CaesarCipher {
@@ -10,6 +8,7 @@ public class CaesarCipher {
 	static String lower = "abcdefghijklmnopqrstuvwxyz";
 	static String upper = lower.toUpperCase();
 
+
 	// main method, pede por input e gera a cifra.
 	public static void main(String[] args) {
 
@@ -17,7 +16,7 @@ public class CaesarCipher {
 		int chave = pedeDeslocamento();
 
 		String encoded = encode(texto, chave);
-		String decoded = decodeConsonant(encoded);
+		String decoded = decode(encoded);
 
 		System.out.println("\nenconded: " + encoded);
 		System.out.println("deconded: " + decoded);
@@ -69,184 +68,57 @@ public class CaesarCipher {
 	// metodo principal de decodificação >> calcula frequencia das letras e gera 3 possibilidades.
 	public static String decode(String str) {
 
-		str = formating(str);
-
-		// calcula letra mais frequente.
-		char maior = str.charAt(0);
-		int indice = 0;
-		for (int i = 1; i < str.length(); i++) {
-			char letra = str.charAt(i);
-			if (maior < letra) {
-				maior = letra;
-				indice = i;
-			}
-		}
-
-		String[] letras = {"a", "e", "o"};
-		String[] decifragens = new String[letras.length];
-
-		// assume que a letra com maior frequencia é 'a', 'e', ou 'o'.
-		for (int i = 0; i < letras.length; i++) {
-
-			int deslocamento = -(indice - lower.indexOf(letras[i])) + 26;
-			// garante que o deslocamento é um inteiro positivo.
-			if (deslocamento < 0) {
-				deslocamento += 26;
-				
-			}
-
-			// gera as três possíveis decodificações.
-			decifragens[i] = encode(str, deslocamento);
-		}
-
-		// retorna a melhor decodificação.
-		return bestGuess(decifragens);
-	}
-
-
-
-
-	public static String decodeConsonant(String str) {
-
-		String auxiliar = formating(str).toLowerCase();
+		// array com todas as decifragens possíveis.
 		String[] decifragens = new String[lower.length()];
 
+		// decifra cada deslocamento possível.
 		for (int i = 0; i < decifragens.length; i++) {
 			decifragens[i] = encode(str, i);
 		}
 
 		// retorna a melhor decodificação.
-		return consonant(decifragens);
+		return decifragem(decifragens);
 	}
 
 	// metodo q decodifica contando vogais e consoantes.
-	private static String consonant(String[] decifragens) {
+	private static String decifragem(String[] decifragens) {
 
 		int[] repeticoes = new int[decifragens.length]; // repetições por decodificação.
 
 		String vogais = "aeiou";
 		String consoantes = "bcdfghjklmnpqrstvwxyz";
 
-		for (int i = 0; i < decifragens.length - 1; i++) {
+		for (int i = 0; i < decifragens.length - 1; i++) { // percorre array de decifragens
 
 			int cont = 0;
 
-			for (int j = 0; j < decifragens[i].length() - 1; j++) {
+			for (int j = 0; j < decifragens[i].length() - 1; j++) { // percorre a string armazenada no decifragens[i]
 
 				String antecessor = String.valueOf(decifragens[i].charAt(j)); // consoante.
 				String sucessor = String.valueOf(decifragens[i].charAt(j + 1)); // vogal.
 
 				if (consoantes.contains(antecessor) && vogais.contains(sucessor)) {
+					// se a consoante for sucedida de uma vogal:
 					cont++;
 				}
 			}
-
+			// armazena no array.
 			repeticoes[i] = cont;
 		}
 
 
-		// define o indice da decodificação com a MENOR frequencia de letras raras.
-		int menor = repeticoes[0];
+		// define o indice da decodificação com a MAIOR frequencia de cosoantes sucedidas por vogal.
+		int maior = repeticoes[0];
 		int indice = 0;
 		for (int i = 1; i < repeticoes.length; i++) {
-			if (menor > repeticoes[i]) {
-				menor = repeticoes[i];
+			if (maior < repeticoes[i]) {
+				maior = repeticoes[i];
 				indice = i;
 			}
 		}
 
-		// decodificação com menor ocorrencias de letras raras.
-		System.out.println(Arrays.toString(repeticoes));
-		System.out.println(decifragens[indice]);
+		// decodificação com maior ocorrencias de cosoantes sucedidas por vogal.
 		return decifragens[indice];
-	}
-
-	// metodo auxiliar de decodificação >> calcula frequencia de letras raras na lingua portuguesa.
-	private static String bestGuess(String[] decifragens) {
-
-		int[] repeticoes = new int[decifragens.length]; // repetições por decodificação.
-
-		// conta frequência de 'x', 'w', 'y' e 'k'.
-		for (int i = 0; i < decifragens.length; i++) {
-			// decodificação a ser analisada.
-			String frase = decifragens[i];
-			int cont = 0; // conta ocorrÊncias.
-
-			// conta ocorrencias de 'x', 'w', 'y' ou 'k'.
-			for (int j = 0; j < frase.length(); j++) {
-
-				char letra = frase.charAt(j);
-				switch (letra) {
-					case 'x','w','y','k':
-						cont++;
-				}
-
-			}
-			// armazena contador no int[] repetições.
-			repeticoes[i] = cont;
-		}
-
-
-		// verifica se há empate de letras em repetições[].
-		if (isEqual(repeticoes).length > 1) {
-			// caso isEqual != {0}.
-
-			// armazena indices das
-			int[] indices = isEqual(repeticoes);
-
-			// conta ocorrências de 'z'.
-			for (int i = 0; i < indices.length; i++) { // percorre indices (isEqual).
-
-				String frase = decifragens[indices[i]]; // decodificação a ser analisada.
-				int cont = 0;
-
-				// conta as ocorrencias de 'z'.
-				for (int j = 0; j < frase.length(); j++) {
-					char letra = frase.charAt(j);
-					if (letra == 'z') {
-						cont++;
-					}
-				}
-
-				// soma o contador ao int[] repetições.
-				repeticoes[indices[i]] += cont;
-			}
-
-		}
-
-		// define o indice da decodificação com a MENOR frequencia de letras raras.
-		int menor = repeticoes[0];
-		int indice = 0;
-		for (int i = 1; i < repeticoes.length; i++) {
-			if (menor > repeticoes[i]) {
-				menor = repeticoes[i];
-				indice = i;
-			}
-		}
-
-		// decodificação com menor ocorrencias de letras raras.
-		return decifragens[indice];
-	}
-
-	// verifica e retorna os indices de frequencia de letras raras que estão empatados.
-	public static int[] isEqual(int[] numeros) {
-
-		if (numeros[0] == numeros[1] && numeros[0] == numeros[2]) {
-			return new int[] {0, 1, 2};
-
-		} else if (numeros[0] == numeros[1]) {
-			return new int[] {0, 1};
-
-		} else if (numeros[0] == numeros[2]) {
-			return new int[] {0, 2};
-
-		} else if (numeros[1] == numeros[2]) {
-			return new int[] {1, 2};
-
-		} else {
-			return new int[] {0};
-		}
-
 	}
 
 	// usa scanner para pedir string input do usuário.
